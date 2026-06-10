@@ -284,6 +284,7 @@ export class LotteryMachine {
 
   private drawBalls(count: number, isSpecial: boolean) {
     let drawn = 0;
+    let lastDrawTime = 0;
     this.setStatus('開獎中...');
 
     this.drawTimer = setInterval(() => {
@@ -316,12 +317,28 @@ export class LotteryMachine {
         return;
       }
 
-      // pick from the 3 balls closest to the top
-      const sorted = this.balls
-        .map((b, i) => ({ i, y: b.body.position.y }))
-        .sort((a, b) => a.y - b.y);
-      const topCount = Math.min(3, sorted.length);
-      const idx = sorted[Math.floor(Math.random() * topCount)].i;
+      // only capture a ball that has bounced near the top exit;
+      // if none is in range, wait for the next tick
+      const exitX = CENTER;
+      const exitY = CENTER - CONTAINER_RADIUS + BALL_RADIUS;
+      const captureRadius = CONTAINER_RADIUS * 0.35;
+
+      let idx = -1;
+      let minDist = Infinity;
+      this.balls.forEach((b, i) => {
+        const dx = b.body.position.x - exitX;
+        const dy = b.body.position.y - exitY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < captureRadius && dist < minDist) {
+          minDist = dist;
+          idx = i;
+        }
+      });
+
+      if (idx === -1) return; // no ball near the exit yet — keep mixing
+      if (Date.now() - lastDrawTime < 2000) return; // pace the captures
+      lastDrawTime = Date.now();
+
       const ball = this.balls[idx];
       this.drawnNumbers.push(ball.number);
 
@@ -332,7 +349,7 @@ export class LotteryMachine {
 
       drawn++;
       this.setStatus(`開獎中... ${drawn}/${count}`);
-    }, 2500);
+    }, 800);
   }
 
   private ejectBall(ball: { body: Matter.Body; number: number; color: string }, isSpecial: boolean) {
@@ -518,11 +535,11 @@ export class LotteryMachine {
       // bottom push — upward force for balls in lower region
       this.balls.forEach(ball => {
         const dy = ball.body.position.y - CENTER;
-        if (dy > CONTAINER_RADIUS * 0.3) {
-          const strength = ((dy - CONTAINER_RADIUS * 0.3) / (CONTAINER_RADIUS * 0.7)) * 0.015;
-          if (Math.random() < 0.4) {
+        if (dy > CONTAINER_RADIUS * 0.23) {
+          const strength = ((dy - CONTAINER_RADIUS * 0.23) / (CONTAINER_RADIUS * 0.77)) * 0.028;
+          if (Math.random() < 0.45) {
             Matter.Body.applyForce(ball.body, ball.body.position, {
-              x: (Math.random() - 0.5) * 0.008,
+              x: (Math.random() - 0.5) * 0.01,
               y: -strength,
             });
           }
