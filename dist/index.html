@@ -2,12 +2,31 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
     <title>HappyGo 開獎模擬器</title>
+    <meta name="description" content="台灣樂透開獎模擬器 — 今彩539、大樂透、威力彩，物理引擎模擬開獎。" />
+    <meta name="theme-color" content="#1a1a2e" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <script defer src="./assets/index-Z4SWTdaU.js"></script>
+
+    <!-- iOS / Apple -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="HappyGo" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <script defer src="./assets/index-CjvoxPmX.js"></script>
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./sw.js').catch(function () {});
+        });
+      }
+    </script>
   </body>
 </html>
